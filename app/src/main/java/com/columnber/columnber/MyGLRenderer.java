@@ -23,6 +23,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public boolean inAir = false;
     public boolean goingLeft = false;
     public boolean goingRight = false;
+    public boolean falling = false;
+    public boolean lost = false;
     public int jumpCol = 1;
     private long time = 0;
     private Protrusion[] mProtrusions = new Protrusion[9];
@@ -32,8 +34,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private static final float BOTTOM_OF_SCREEN = -1.0f;
     private static final float TOP_OF_SCREEN = 1.0f;
     private static final float XGAP = 0.5f;
-    private static final float YGAP = -0.51f;
+    private static final float YGAP = -0.465f;
     private static final float STARTPOS = BOTTOM_OF_SCREEN + XGAP;
+    private static final float PLAYER_ACCEL = -2f;
+    private static final float START_SPEED = -0.005f;
+    private static final float MAX_SPEED = -0.025f;
     private boolean needNext;
 
     // mMVPMatrix is an abbreviation for "Model View Projection Matrix"
@@ -45,11 +50,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         // Set the background frame color
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
+        mPlayer = new Player();
+        mPlayer.TransMatrix[13] = STARTPOS;
+
         for (int i = 0; i < mProtrusions.length; i++) {
             mProtrusions[i] = new Protrusion(i % COLUMNS);
-            mPlayer = new Player();
-
-            mPlayer.TransMatrix[13] = STARTPOS;
 
             if (i == 1) {
                 mProtrusions[i].TransMatrix[13] = STARTPOS;
@@ -85,52 +90,16 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             Matrix.multiplyMM(p.protMatrix, 0, mMVPMatrix, 0, p.TransMatrix, 0);
         }
 
-        if (jump) {
-            if (protQueue.size() > 1) {
-                jumpYAccel = (baseAccel * -2.5f);
-                protQueue.removeLast();
-                inAir = true;
-            }
-            jump = false;
-        }
-
-        if (inAir) {
-            if (mPlayer.TransMatrix[13] >= mProtrusions[protQueue.getLast()].TransMatrix[13]) {
-                mPlayer.TransMatrix[13] = mProtrusions[protQueue.getLast()].TransMatrix[13];
-                jumpYAccel = 0;
-            } else if (mPlayer.TransMatrix[13] < mProtrusions[protQueue.getLast()].TransMatrix[13]) {
-                jumpYAccel = (baseAccel * -2f);
-            }
-
-            if ((mPlayer.TransMatrix[12] <= (jumpCol - 1) * YGAP && goingRight) || (mPlayer.TransMatrix[12] >= (jumpCol - 1) * YGAP && goingLeft)) {
-                jumpXAccel = 0;
-                mPlayer.TransMatrix[12] = (jumpCol - 1) * YGAP;
-                goingLeft = false;
-                goingRight = false;
-            } else if (mPlayer.TransMatrix[12] < (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
-                // Needs to be -2 * baseAccel for 1 distance hops and -4 * baseAccel for 2 distance hops
-                jumpXAccel = baseAccel * (-2f - (2 * (Math.abs((jumpCol % 2) - mPlayer.TransMatrix[12] / YGAP))));
-                goingLeft = true;
-            } else if (mPlayer.TransMatrix[12] > (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
-                // Needs to be 2 * baseAccel for 1 distance hops and 4 * baseAccel for 2 distance hops
-                jumpXAccel = -baseAccel * (-2f - (2 * (Math.abs((jumpCol % 2) + mPlayer.TransMatrix[12] / YGAP))));
-                goingRight = true;
-            }
-
-            if (jumpYAccel == 0 && jumpXAccel == 0)
-                inAir = false;
-        }
-
         if (started) {
             if (baseAccel == 0) {
-                baseAccel = -0.0050f;
+                baseAccel = START_SPEED;
                 time = SystemClock.uptimeMillis();
             }
 
             // Create a rotation transformation for the triangle
             long runtime = SystemClock.uptimeMillis() - time;
 
-            if (baseAccel >= -0.03) {
+            if (baseAccel >= MAX_SPEED) {
                 baseAccel *= (float) (1 + (runtime / 50000000.0));
             }
 
@@ -153,14 +122,60 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             }
         }
 
+        if (jump) {
+            if (protQueue.size() > 1) {
+                jumpYAccel = (baseAccel * PLAYER_ACCEL);
+                protQueue.removeLast();
+                inAir = true;
+            }
+            jump = false;
+        }
+
+        if (inAir) {
+            if (mPlayer.TransMatrix[13] >= mProtrusions[protQueue.getLast()].TransMatrix[13]) {
+                mPlayer.TransMatrix[13] = mProtrusions[protQueue.getLast()].TransMatrix[13];
+                jumpYAccel = 0;
+            } else if (mPlayer.TransMatrix[13] < mProtrusions[protQueue.getLast()].TransMatrix[13]) {
+                jumpYAccel = (baseAccel * PLAYER_ACCEL);
+            }
+
+            if ((mPlayer.TransMatrix[12] <= (jumpCol - 1) * YGAP && goingRight) || (mPlayer.TransMatrix[12] >= (jumpCol - 1) * YGAP && goingLeft)) {
+                jumpXAccel = 0;
+                mPlayer.TransMatrix[12] = (jumpCol - 1) * YGAP;
+                goingLeft = false;
+                goingRight = false;
+            } else if (mPlayer.TransMatrix[12] < (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
+                // Needs to be -2 * baseAccel for 1 distance hops and -4 * baseAccel for 2 distance hops
+                jumpXAccel = 0.9f * (baseAccel * (PLAYER_ACCEL + (PLAYER_ACCEL * (Math.abs((jumpCol % 2) - mPlayer.TransMatrix[12] / YGAP)))));
+                goingLeft = true;
+            } else if (mPlayer.TransMatrix[12] > (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
+                // Needs to be 2 * baseAccel for 1 distance hops and 4 * baseAccel for 2 distance hops
+                jumpXAccel = 0.9f * (-baseAccel * (PLAYER_ACCEL + (PLAYER_ACCEL * (Math.abs((jumpCol % 2) + mPlayer.TransMatrix[12] / YGAP)))));
+                goingRight = true;
+            }
+
+            if (jumpYAccel == 0 && jumpXAccel == 0) {
+                inAir = false;
+                if (jumpCol != (protQueue.getLast() % 3)) {
+                    falling = true;
+                }
+            }
+        }
+
+        if (falling || mPlayer.TransMatrix[13] < (BOTTOM_OF_SCREEN - Protrusion.HEIGHT - Player.HEIGHT)) {
+            jumpYAccel = -baseAccel * PLAYER_ACCEL;
+            baseAccel = 0;
+        }
+
         for (Protrusion p : mProtrusions) {
-            if (p.TransMatrix[13] >= BOTTOM_OF_SCREEN) {
+            if (p.TransMatrix[13] >= (BOTTOM_OF_SCREEN - Protrusion.HEIGHT)) {
                 // Draw triangle
                 p.draw(p.protMatrix);
             }
         }
 
-        mPlayer.draw(mPlayer.playerMatrix);
+        if (mPlayer.TransMatrix[13] >= (BOTTOM_OF_SCREEN - Protrusion.HEIGHT - Player.HEIGHT))
+            mPlayer.draw(mPlayer.playerMatrix);
     }
 
     public void onSurfaceChanged(GL10 unused, int width, int height) {
@@ -174,7 +189,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     }
 
     public static int loadShader(int type, String shaderCode) {
-
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);
@@ -184,13 +198,5 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glCompileShader(shader);
 
         return shader;
-    }
-
-    public float getAccel() {
-        return baseAccel;
-    }
-
-    public void setAccel(float y) {
-        baseAccel = y;
     }
 }

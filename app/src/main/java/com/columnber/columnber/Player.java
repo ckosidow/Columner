@@ -21,11 +21,13 @@ public class Player {
     public final float[] TransMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
     private final float COLOR[] = {0.5f, 0.2f, 0.5f, 1.0f};
     private final short DRAW_ORDER[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
+    public static final float HEIGHT = 0.075f;
+    public static final float WIDTH = 0.075f;
     private float playerCoords[] = {
-            0.025f, 0.175f, 0.0f,   // top left
-            -0.025f, 0.175f, 0.0f,   // bottom left
-            -0.025f, .025f, 0.0f,   // bottom right
-            0.025f, .025f, 0.0f}; // top right
+            (WIDTH / 2), (HEIGHT + Protrusion.HEIGHT), 0.0f,   // top left
+            -(WIDTH / 2), (HEIGHT + Protrusion.HEIGHT), 0.0f,   // top right
+            -(WIDTH / 2), Protrusion.HEIGHT, 0.0f,   // bottom left
+            (WIDTH / 2), Protrusion.HEIGHT, 0.0f}; // bottom right
     static final int COORDS_PER_VERTEX = 3;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private final int vertexCount = playerCoords.length / COORDS_PER_VERTEX;

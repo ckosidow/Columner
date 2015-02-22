@@ -19,44 +19,44 @@ public class Protrusion {
     private int mMVPMatrixHandle;
     public float[] protMatrix = new float[16];
     public final float[] TransMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-    private final float COLOR[] = {0.63671875f, 0.76953125f, 0.22265625f, 1.0f};
-
-    private final String vertexShaderCode =
-        // This matrix member variable provides a hook to manipulate
-        // the coordinates of the objects that use this vertex shader
-        "uniform mat4 uMVPMatrix;" +
-            "attribute vec4 vPosition;" +
-            "void main() {" +
-            // the matrix must be included as a modifier of gl_Position
-            // Note that the uMVPMatrix factor *must be first* in order
-            // for the matrix multiplication product to be correct.
-            "  gl_Position = uMVPMatrix * vPosition;" +
-            "}";
-
-    private final String fragmentShaderCode =
-        "precision mediump float;" +
-            "uniform vec4 vColor;" +
-            "void main() {" +
-            "  gl_FragColor = vColor;" +
-            "}";
-
+    private final float COLOR[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    public static final float HEIGHT = 0.025f;
+    public static final float WIDTH = 0.15f;
+    private static final float LEFT = 0.54f;
     private float protCoords[] = {
-            .58f, 0.025f, 0.0f,   // top left
-            .58f, -0.025f, 0.0f,   // bottom left
-            .43f, -0.025f, 0.0f,   // bottom right
-            .43f, 0.025f, 0.0f}; // top right
-
+            LEFT, HEIGHT, 0.0f,   // top left
+            LEFT, 0.0f, 0.0f,   // bottom left
+            (LEFT - WIDTH), 0.0f, 0.0f,   // bottom right
+            (LEFT - WIDTH), HEIGHT, 0.0f}; // top right
     private final short DRAW_ORDER[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
-
     static final int COORDS_PER_VERTEX = 3;
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
     private final int vertexCount = protCoords.length / COORDS_PER_VERTEX;
 
+    private final String vertexShaderCode =
+            // This matrix member variable provides a hook to manipulate
+            // the coordinates of the objects that use this vertex shader
+            "uniform mat4 uMVPMatrix;" +
+                    "attribute vec4 vPosition;" +
+                    "void main() {" +
+                    // the matrix must be included as a modifier of gl_Position
+                    // Note that the uMVPMatrix factor *must be first* in order
+                    // for the matrix multiplication product to be correct.
+                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "}";
+
+    private final String fragmentShaderCode =
+            "precision mediump float;" +
+                    "uniform vec4 vColor;" +
+                    "void main() {" +
+                    "  gl_FragColor = vColor;" +
+                    "}";
+
     public Protrusion(double col) {
-        protCoords[0] -= (.51 * col);
-        protCoords[3] -= (.51 * col);
-        protCoords[6] -= (.51 * col);
-        protCoords[9] -= (.51 * col);
+        protCoords[0] -= (.465 * col);
+        protCoords[3] -= (.465 * col);
+        protCoords[6] -= (.465 * col);
+        protCoords[9] -= (.465 * col);
 
         // initialize vertex byte buffer for shape coordinates
         ByteBuffer bb = ByteBuffer.allocateDirect(

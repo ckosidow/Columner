@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 class MyGLSurfaceView extends GLSurfaceView {
     private final MyGLRenderer mRenderer;
     private Context context;
-    private final float TOUCH_SCALE_FACTOR = 180.0f / 1800;
 
     public MyGLSurfaceView(Context c) {
         super(c);
@@ -42,17 +41,19 @@ class MyGLSurfaceView extends GLSurfaceView {
 
         float x = e.getX();
 
-        if(x <= (width / 3))
-            mRenderer.jumpCol = 0;
-        else if (x > width / 3 && x < (width * 2 / 3))
-            mRenderer.jumpCol = 1;
-        else if (x > (width * 2 / 3))
-            mRenderer.jumpCol = 2;
+        if (!mRenderer.inAir && !mRenderer.falling) {
+            if (x <= (width / 3))
+                mRenderer.jumpCol = 0;
+            else if (x > width / 3 && x < (width * 2 / 3))
+                mRenderer.jumpCol = 1;
+            else if (x > (width * 2 / 3))
+                mRenderer.jumpCol = 2;
+        }
 
         if (!mRenderer.started)
             mRenderer.started = true;
 
-        if (!mRenderer.jump && !mRenderer.inAir)
+        if (!mRenderer.jump && !mRenderer.inAir && !mRenderer.falling)
             mRenderer.jump = true;
 
         requestRender();
