@@ -19,7 +19,7 @@ public class Protrusion {
     private int mMVPMatrixHandle;
     public float[] protMatrix = new float[16];
     public final float[] TransMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-    private final float COLOR[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    private final float color[] = {1.0f, 1.0f, 1.0f, 1.0f};
     public static final float HEIGHT = 0.025f;
     public static final float WIDTH = 0.15f;
     private static final float LEFT = 0.54f;
@@ -113,7 +113,7 @@ public class Protrusion {
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
 
         // Set color for drawing the triangle
-        GLES20.glUniform4fv(mColorHandle, 1, COLOR, 0);
+        GLES20.glUniform4fv(mColorHandle, 1, color, 0);
 
         // get handle to shape's transformation matrix
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");

@@ -8,7 +8,7 @@ import android.os.Bundle;
  * Created by CKosidowski11 on 2/16/2015.
  */
 public class MainMenuOGLESActivity extends Activity {
-    private GLSurfaceView mGLView;
+    public GLSurfaceView mGLView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

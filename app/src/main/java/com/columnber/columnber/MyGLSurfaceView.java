@@ -9,22 +9,21 @@ import android.view.MotionEvent;
  * Created by CKosidowski11 on 2/16/2015.
  */
 class MyGLSurfaceView extends GLSurfaceView {
-    private final MyGLRenderer mRenderer;
+    private MyGLRenderer mRenderer;
     private Context context;
+    private DisplayMetrics displayMetrics;
+    private int width;
+    private float x;
 
     public MyGLSurfaceView(Context c) {
         super(c);
 
         context = c;
 
-        // Render the view only when there is a change in the drawing data.
-        // To allow the triangle to rotate automatically, this line is commented out:
-        //setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-
         // Create an OpenGL ES 2.0 context
         setEGLContextClientVersion(2);
 
-        mRenderer = new MyGLRenderer();
+        mRenderer = new MyGLRenderer(context);
 
         // Set the Renderer for drawing on the GLSurfaceView
         setRenderer(mRenderer);
@@ -32,31 +31,29 @@ class MyGLSurfaceView extends GLSurfaceView {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        // MotionEvent reports input details from the touch screen
-        // and other input controls. In this case, you are only
-        // interested in events where the touch position changed.
+        if ((e.getEventTime() - e.getDownTime()) < 1) {
+            displayMetrics = context.getResources().getDisplayMetrics();
+            width = displayMetrics.widthPixels;
 
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        int width = displayMetrics.widthPixels;
+            x = e.getX();
 
-        float x = e.getX();
+            if (!mRenderer.inAir && !mRenderer.falling) {
+                if (x <= (width / 3))
+                    mRenderer.jumpCol = 0;
+                else if (x > width / 3 && x < (width * 2 / 3))
+                    mRenderer.jumpCol = 1;
+                else if (x > (width * 2 / 3))
+                    mRenderer.jumpCol = 2;
+            }
 
-        if (!mRenderer.inAir && !mRenderer.falling) {
-            if (x <= (width / 3))
-                mRenderer.jumpCol = 0;
-            else if (x > width / 3 && x < (width * 2 / 3))
-                mRenderer.jumpCol = 1;
-            else if (x > (width * 2 / 3))
-                mRenderer.jumpCol = 2;
+            if (!mRenderer.started)
+                mRenderer.started = true;
+
+            if (!mRenderer.jump && !mRenderer.inAir && !mRenderer.falling)
+                mRenderer.jump = true;
+
+            requestRender();
         }
-
-        if (!mRenderer.started)
-            mRenderer.started = true;
-
-        if (!mRenderer.jump && !mRenderer.inAir && !mRenderer.falling)
-            mRenderer.jump = true;
-
-        requestRender();
 
         return true;
     }
