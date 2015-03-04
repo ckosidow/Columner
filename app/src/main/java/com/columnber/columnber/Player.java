@@ -19,7 +19,7 @@ public class Player {
     private int mMVPMatrixHandle;
     public float[] playerMatrix = new float[16];
     public final float[] TransMatrix = {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-    private final float COLOR[] = {0.5f, 0.2f, 0.5f, 1.0f};
+    private final float COLOR[] = {0.6f, 0.3f, 0.6f, 1.0f};
     private final short DRAW_ORDER[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
     public static final float HEIGHT = 0.075f;
     public static final float WIDTH = 0.075f;

@@ -32,7 +32,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public boolean goingLeft = false;
     public boolean goingRight = false;
     public boolean falling = false;
-    public int jumpCol = 1;
+    private int jumpCol = 1;
+    public int nextCol;
     private Protrusion[] mProtrusions = new Protrusion[9];
     private Player mPlayer;
     private LinkedList<Integer> protQueue = new LinkedList<>();
@@ -43,7 +44,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private static final float XGAP = 0.5f;
     private static final float YGAP = -0.465f;
     private static final float STARTPOS = BOTTOM_OF_SCREEN + XGAP;
-    private static final float JUMP_SPEED = -30f;
+    private static final float JUMP_SPEED = -1f;
     private static final float START_SPEED = -0.01f;
     private static final float MAX_SPEED = -0.03f;
     private static final float ACCEL = -.000005f;
@@ -204,26 +205,26 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
 
         if (jump && !inAir) {
             if (protQueue.size() > 1) {
-                jumpYAccel = (baseSpeed * JUMP_SPEED);
                 protQueue.removeLast();
                 inAir = true;
+                jumpCol = nextCol;
             }
             jump = false;
         }
 
         if (inAir && !falling) {
             if (mPlayer.TransMatrix[13] >= (mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) && !endOfJump) {
-                mPlayer.TransMatrix[13] = (mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT) - .005f);
-                jumpYAccel = -baseSpeed * (JUMP_SPEED * .5f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
+                mPlayer.TransMatrix[13] = (mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT) - .001f);
+                jumpYAccel = -baseSpeed * (JUMP_SPEED * 22f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
                 endOfJump = true;
             } else if (endOfJump && mPlayer.TransMatrix[13] > mProtrusions[protQueue.getLast()].TransMatrix[13]) {
-                jumpYAccel = -baseSpeed * (JUMP_SPEED * .5f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
+                jumpYAccel = -baseSpeed * (JUMP_SPEED * 22f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
             } else if (endOfJump && mPlayer.TransMatrix[13] <= mProtrusions[protQueue.getLast()].TransMatrix[13]) {
                 mPlayer.TransMatrix[13] = mProtrusions[protQueue.getLast()].TransMatrix[13];
                 jumpYAccel = 0;
                 endOfJump = false;
             } else if (mPlayer.TransMatrix[13] < mProtrusions[protQueue.getLast()].TransMatrix[13]) {
-                jumpYAccel = baseSpeed * (JUMP_SPEED * .5f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
+                jumpYAccel = baseSpeed * (JUMP_SPEED * 22f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
             }
 
             if ((mPlayer.TransMatrix[12] <= (jumpCol - 1) * YGAP && goingRight) || (mPlayer.TransMatrix[12] >= (jumpCol - 1) * YGAP && goingLeft)) {
@@ -233,11 +234,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 goingRight = false;
             } else if (mPlayer.TransMatrix[12] < (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
                 // Needs to be -2 * baseSpeed for 1 distance hops and -4 * baseSpeed for 2 distance hops
-                jumpXAccel = 0.04f * (baseSpeed * (JUMP_SPEED + (JUMP_SPEED * (Math.abs((jumpCol % 2) - mPlayer.TransMatrix[12] / YGAP)))));
+                jumpXAccel = (baseSpeed * 1.3f * (JUMP_SPEED + (JUMP_SPEED * (Math.abs((jumpCol % 2) - mPlayer.TransMatrix[12] / YGAP)))));
                 goingLeft = true;
             } else if (mPlayer.TransMatrix[12] > (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
                 // Needs to be 2 * baseSpeed for 1 distance hops and 4 * baseSpeed for 2 distance hops
-                jumpXAccel = 0.04f * (-baseSpeed * (JUMP_SPEED + (JUMP_SPEED * (Math.abs((jumpCol % 2) + mPlayer.TransMatrix[12] / YGAP)))));
+                jumpXAccel = (-baseSpeed * 1.3f * (JUMP_SPEED + (JUMP_SPEED * (Math.abs((jumpCol % 2) + mPlayer.TransMatrix[12] / YGAP)))));
                 goingRight = true;
             }
 
@@ -251,7 +252,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         }
 
         if (falling || mPlayer.TransMatrix[13] < (BOTTOM_OF_SCREEN - Protrusion.HEIGHT - Player.HEIGHT)) {
-            jumpYAccel = -baseSpeed * JUMP_SPEED * .13f;
+            jumpYAccel = -baseSpeed * JUMP_SPEED;
             baseSpeed = 0;
         }
 
@@ -306,7 +307,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         tm.setUniformscale(ssu);
 
         // Create our new textobject
-        scoreTxt = new TextObject(score + " ", 250f, 1750f);
+        scoreTxt = new TextObject(score + " ", (context.getResources().getDisplayMetrics().widthPixels / 5), (9 * context.getResources().getDisplayMetrics().heightPixels / 10));
 
         // Add it to our manager
         tm.addText(scoreTxt);

@@ -37,19 +37,19 @@ class MyGLSurfaceView extends GLSurfaceView {
 
             x = e.getX();
 
-            if (!mRenderer.inAir && !mRenderer.falling) {
+            if (!mRenderer.falling) {
                 if (x <= (width / 3))
-                    mRenderer.jumpCol = 0;
+                    mRenderer.nextCol = 0;
                 else if (x > width / 3 && x < (width * 2 / 3))
-                    mRenderer.jumpCol = 1;
+                    mRenderer.nextCol = 1;
                 else if (x > (width * 2 / 3))
-                    mRenderer.jumpCol = 2;
+                    mRenderer.nextCol = 2;
             }
 
             if (!mRenderer.started)
                 mRenderer.started = true;
 
-            if (!mRenderer.jump && !mRenderer.inAir && !mRenderer.falling)
+            if (!mRenderer.jump && !mRenderer.falling)
                 mRenderer.jump = true;
 
             requestRender();
