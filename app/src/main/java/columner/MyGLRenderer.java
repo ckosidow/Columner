@@ -1,4 +1,4 @@
-package com.columnber.columnber;
+package columner;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -25,13 +25,13 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     public float baseSpeed = 0;
     public float jumpYAccel = 0;
     public float jumpXAccel = 0;
-    public boolean started = false;
-    public boolean jump = false;
-    public boolean inAir = false;
-    public boolean endOfJump = false;
-    public boolean goingLeft = false;
-    public boolean goingRight = false;
-    public boolean falling = false;
+    public boolean started;
+    public boolean jump;
+    public boolean inAir;
+    public boolean endOfJump;
+    public boolean goingLeft;
+    public boolean goingRight;
+    public boolean falling;
     private int jumpCol = 1;
     public int nextCol;
     private Protrusion[] mProtrusions = new Protrusion[9];
@@ -50,7 +50,8 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
     private static final float ACCEL = -.000005f;
     private boolean needNext;
     private Context context;
-    private int score = 0;
+    private int score;
+    private EGLConfig config;
 
     public static float vertices[];
     public static short indices[];
@@ -78,7 +79,18 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         context = c;
     }
 
-    public void onSurfaceCreated(GL10 unused, EGLConfig config) {
+    public void onSurfaceCreated(GL10 unused, EGLConfig c) {
+        config = c;
+
+        protQueue.clear();
+        falling = false;
+        inAir = false;
+        jump = false;
+        endOfJump = false;
+        goingLeft = false;
+        goingRight = false;
+        jumpCol = 1;
+
         // Setup our scaling system
         SetupScaling();
         // Create the triangles
@@ -178,6 +190,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         if (started) {
             if (baseSpeed == 0) {
                 baseSpeed = START_SPEED;
+                score = 0;
             }
 
             if (baseSpeed >= MAX_SPEED) {
@@ -203,7 +216,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             }
         }
 
-        if (jump && !inAir) {
+        if (jump && !inAir && !falling) {
             if (protQueue.size() > 1) {
                 protQueue.removeLast();
                 inAir = true;
@@ -221,14 +234,21 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 jumpYAccel = -baseSpeed * (JUMP_SPEED * 22f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
             } else if (endOfJump && mPlayer.TransMatrix[13] <= mProtrusions[protQueue.getLast()].TransMatrix[13]) {
                 mPlayer.TransMatrix[13] = mProtrusions[protQueue.getLast()].TransMatrix[13];
-                jumpYAccel = 0;
+                if (jumpCol != (protQueue.getLast() % 3))
+                    falling = true;
+                else
+                    jumpYAccel = 0;
+
                 endOfJump = false;
             } else if (mPlayer.TransMatrix[13] < mProtrusions[protQueue.getLast()].TransMatrix[13]) {
                 jumpYAccel = baseSpeed * (JUMP_SPEED * 22f * ((mProtrusions[protQueue.getLast()].TransMatrix[13] + (Player.HEIGHT)) - mPlayer.TransMatrix[13]));
             }
 
             if ((mPlayer.TransMatrix[12] <= (jumpCol - 1) * YGAP && goingRight) || (mPlayer.TransMatrix[12] >= (jumpCol - 1) * YGAP && goingLeft)) {
-                jumpXAccel = 0;
+                if (jumpCol != (protQueue.getLast() % 3))
+                    falling = true;
+                else
+                    jumpXAccel = 0;
                 mPlayer.TransMatrix[12] = (jumpCol - 1) * YGAP;
                 goingLeft = false;
                 goingRight = false;
@@ -242,22 +262,25 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 goingRight = true;
             }
 
-            if (jumpYAccel == 0 && jumpXAccel == 0) {
+            if(jumpYAccel == 0 && jumpXAccel == 0) {
+                score++;
                 inAir = false;
-                if (jumpCol != (protQueue.getLast() % 3)) {
-                    falling = true;
-                } else
-                    score++;
             }
         }
 
         if (falling || mPlayer.TransMatrix[13] < (BOTTOM_OF_SCREEN - Protrusion.HEIGHT - Player.HEIGHT)) {
-            jumpYAccel = -baseSpeed * JUMP_SPEED;
             baseSpeed = 0;
+            started = false;
         }
 
         if (mPlayer.TransMatrix[13] >= (BOTTOM_OF_SCREEN - Protrusion.HEIGHT - Player.HEIGHT))
             mPlayer.draw(mPlayer.playerMatrix);
+        else {
+            baseSpeed = 0;
+            jumpYAccel = 0;
+            jumpXAccel = 0;
+            onSurfaceCreated(unused, config);
+        }
 
         for (Protrusion p : mProtrusions) {
             if (p.TransMatrix[13] >= (BOTTOM_OF_SCREEN - Protrusion.HEIGHT)) {
@@ -330,18 +353,6 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             ssu = ssy;
         else
             ssu = ssx;
-    }
-
-    public void UpdateSprite() {
-        // Get new transformed vertices
-        //vertices = sprite.getTransformedVertices();
-
-        // The vertex buffer.
-        ByteBuffer bb = ByteBuffer.allocateDirect(vertices.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        vertexBuffer = bb.asFloatBuffer();
-        vertexBuffer.put(vertices);
-        vertexBuffer.position(0);
     }
 
     private void Render(float[] m) {

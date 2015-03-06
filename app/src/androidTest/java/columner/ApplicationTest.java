@@ -1,4 +1,4 @@
-package com.columnber.columnber;
+package columner;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

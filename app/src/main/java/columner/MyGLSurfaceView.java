@@ -1,4 +1,4 @@
-package com.columnber.columnber;
+package columner;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

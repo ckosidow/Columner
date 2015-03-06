@@ -2,11 +2,11 @@
 <items version="2" >
 
     <item
-        jar="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
+        jar="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
-        <dex dex="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\pre-dexed\debug\classes-bcce6524da940e7e5328bd1db6637053de273d0a.jar" />
+        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
+        <dex dex="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-fa20965050fddee00bf73ded210fd8759d38ab3a.jar" />
     </item>
     <item
         jar="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
@@ -16,11 +16,11 @@
         <dex dex="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\pre-dexed\debug\classes-2cb68302f14427de7ec878e8039190058b1ba80d.jar" />
     </item>
     <item
-        jar="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\libs\internal_impl-21.0.3.jar"
+        jar="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="01ec05bfbafcc07646ba813000bf2ef11742dd03">
-        <dex dex="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-fa20965050fddee00bf73ded210fd8759d38ab3a.jar" />
+        sha1="2c91c949a45a21cdecf26e03951e46c7beec9ad8">
+        <dex dex="C:\Users\CKosidowski11\Desktop\Android\Columnber\app\build\intermediates\pre-dexed\debug\classes-bcce6524da940e7e5328bd1db6637053de273d0a.jar" />
     </item>
     <item
         jar="C:\Users\CKosidowski11\Desktop\Android\adt-bundle-windows-x86_64-20140702\sdk\extras\android\m2repository\com\android\support\support-annotations\21.0.3\support-annotations-21.0.3.jar"

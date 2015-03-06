@@ -1,4 +1,4 @@
-package com.columnber.columnber;
+package columner;
 
 /**
  * Created by CKosidowski11 on 2/24/2015.
