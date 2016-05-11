@@ -18,9 +18,6 @@ import java.util.Random;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-/**
- * Created by CKosidowski11 on 2/16/2015.
- */
 public class MyGLRenderer implements GLSurfaceView.Renderer {
     public float baseSpeed = 0;
     public float jumpYAccel = 0;
@@ -79,7 +76,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         context = c;
     }
 
-    public void onSurfaceCreated(GL10 unused, EGLConfig c) {
+    public void onSurfaceCreated(
+            GL10 unused,
+            EGLConfig c
+    ) {
         config = c;
 
         protQueue.clear();
@@ -174,7 +174,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
             tm.updateText(scoreTxt);
 
             // Prepare the text for rendering
-            tm.PrepareDraw();
+            tm.prepareDraw();
 
             tm.Draw(mtrxProjectionAndView);
         }
@@ -262,7 +262,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
                 goingRight = true;
             }
 
-            if(jumpYAccel == 0 && jumpXAccel == 0) {
+            if (jumpYAccel == 0 && jumpXAccel == 0) {
                 score++;
                 inAir = false;
             }
@@ -290,7 +290,11 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void onSurfaceChanged(GL10 unused, int wid, int hgt) {
+    public void onSurfaceChanged(
+            GL10 unused,
+            int wid,
+            int hgt
+    ) {
         GLES20.glViewport(0, 0, wid, hgt);
 
         float ratio = (float) wid / hgt;
@@ -336,7 +340,7 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         tm.addText(scoreTxt);
 
         // Prepare the text for rendering
-        tm.PrepareDraw();
+        tm.prepareDraw();
     }
 
     public void SetupScaling() {
@@ -518,7 +522,10 @@ public class MyGLRenderer implements GLSurfaceView.Renderer {
         bmp.recycle();
     }
 
-    public static int loadShader(int type, String shaderCode) {
+    public static int loadShader(
+            int type,
+            String shaderCode
+    ) {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);

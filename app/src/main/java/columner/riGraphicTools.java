@@ -1,9 +1,5 @@
 package columner;
 
-/**
- * Created by CKosidowski11 on 2/24/2015.
- */
-
 import android.opengl.GLES20;
 
 public class riGraphicTools {
@@ -63,7 +59,10 @@ public class riGraphicTools {
                     "  gl_FragColor.rgb *= v_Color.a;" +
                     "}";
 
-    public static int loadShader(int type, String shaderCode) {
+    public static int loadShader(
+            int type,
+            String shaderCode
+    ) {
         // create a vertex shader type (GLES20.GL_VERTEX_SHADER)
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);

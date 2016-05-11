@@ -1,8 +1,5 @@
 package columner;
 
-/**
- * Created by CKosidowski11 on 2/24/2015.
- */
 public class TextObject {
     public String text;
     public float x;
@@ -11,15 +8,19 @@ public class TextObject {
 
     public TextObject() {
         text = "default";
-        x = 0f;
-        y = 0f;
-        color = new float[]{1f, 1f, 1f, 1.0f};
+        x = 0.0f;
+        y = 0.0f;
+        color = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
     }
 
-    public TextObject(String txt, float xcoord, float ycoord) {
-        text = txt;
+    public TextObject(
+            final String text,
+            final float xcoord,
+            final float ycoord
+    ) {
+        this.text = text;
         x = xcoord;
         y = ycoord;
-        color = new float[]{1f, 1f, 1f, 1.0f};
+        color = new float[]{1.0f, 1.0f, 1.0f, 1.0f};
     }
 }

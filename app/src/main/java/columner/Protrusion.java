@@ -7,9 +7,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-/**
- * Created by CKosidowski11 on 2/16/2015.
- */
 public class Protrusion {
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;

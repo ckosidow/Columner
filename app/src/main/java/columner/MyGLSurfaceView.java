@@ -5,54 +5,54 @@ import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 
-/**
- * Created by CKosidowski11 on 2/16/2015.
- */
-class MyGLSurfaceView extends GLSurfaceView {
+public class MyGLSurfaceView extends GLSurfaceView {
     private MyGLRenderer mRenderer;
     private Context context;
     private DisplayMetrics displayMetrics;
     private int width;
     private float x;
 
-    public MyGLSurfaceView(Context c) {
-        super(c);
+    public MyGLSurfaceView(final Context context) {
+        super(context);
 
-        context = c;
+        this.context = context;
 
         // Create an OpenGL ES 2.0 context
-        setEGLContextClientVersion(2);
+        this.setEGLContextClientVersion(2);
 
-        mRenderer = new MyGLRenderer(context);
+        mRenderer = new MyGLRenderer(this.context);
 
         // Set the Renderer for drawing on the GLSurfaceView
-        setRenderer(mRenderer);
+        this.setRenderer(mRenderer);
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent e) {
-        if ((e.getEventTime() - e.getDownTime()) < 1) {
+    public boolean onTouchEvent(final MotionEvent event) {
+        if ((event.getEventTime() - event.getDownTime()) < 1) {
             displayMetrics = context.getResources().getDisplayMetrics();
             width = displayMetrics.widthPixels;
 
-            x = e.getX();
+            x = event.getX();
 
             if (!mRenderer.falling) {
-                if (x <= (width / 3))
+                if (x <= (width / 3)) {
                     mRenderer.nextCol = 0;
-                else if (x > width / 3 && x < (width * 2 / 3))
+                } else if (x > width / 3 && x < (width * 2 / 3)) {
                     mRenderer.nextCol = 1;
-                else if (x > (width * 2 / 3))
+                } else if (x > (width * 2 / 3)) {
                     mRenderer.nextCol = 2;
+                }
             }
 
-            if (!mRenderer.started)
+            if (!mRenderer.started) {
                 mRenderer.started = true;
+            }
 
-            if (!mRenderer.jump && !mRenderer.falling)
+            if (!mRenderer.jump && !mRenderer.falling) {
                 mRenderer.jump = true;
+            }
 
-            requestRender();
+            this.requestRender();
         }
 
         return true;

@@ -7,9 +7,6 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
-/**
- * Created by CKosidowski11 on 2/20/2015.
- */
 public class Player {
     private FloatBuffer vertexBuffer;
     private ShortBuffer drawListBuffer;
