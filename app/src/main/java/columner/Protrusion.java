@@ -27,7 +27,7 @@ public class Protrusion {
             (LEFT - WIDTH), HEIGHT, 0.0f}; // top right
     private final short DRAW_ORDER[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
     static final int COORDS_PER_VERTEX = 3;
-    private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex
+    private final int vertexStride = COORDS_PER_VERTEX << 2; // 4 bytes per vertex
     private final int vertexCount = protCoords.length / COORDS_PER_VERTEX;
 
     private final String vertexShaderCode =
@@ -49,34 +49,32 @@ public class Protrusion {
                     "  gl_FragColor = vColor;" +
                     "}";
 
-    public Protrusion(double col) {
+    public Protrusion(final double col) {
         protCoords[0] -= (.465 * col);
         protCoords[3] -= (.465 * col);
         protCoords[6] -= (.465 * col);
         protCoords[9] -= (.465 * col);
 
         // initialize vertex byte buffer for shape coordinates
-        ByteBuffer bb = ByteBuffer.allocateDirect(
+        final ByteBuffer byteBuffer = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 4 bytes per float)
-                protCoords.length * 4);
-        bb.order(ByteOrder.nativeOrder());
-        vertexBuffer = bb.asFloatBuffer();
+                protCoords.length << 2);
+        byteBuffer.order(ByteOrder.nativeOrder());
+        vertexBuffer = byteBuffer.asFloatBuffer();
         vertexBuffer.put(protCoords);
         vertexBuffer.position(0);
 
         // initialize byte buffer for the draw list
-        ByteBuffer dlb = ByteBuffer.allocateDirect(
+        final ByteBuffer dlb = ByteBuffer.allocateDirect(
                 // (# of coordinate values * 2 bytes per short)
-                DRAW_ORDER.length * 2);
+                DRAW_ORDER.length << 1);
         dlb.order(ByteOrder.nativeOrder());
         drawListBuffer = dlb.asShortBuffer();
         drawListBuffer.put(DRAW_ORDER);
         drawListBuffer.position(0);
 
-        int vertexShader = MyGLRenderer.loadShader(GLES20.GL_VERTEX_SHADER,
-                vertexShaderCode);
-        int fragmentShader = MyGLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER,
-                fragmentShaderCode);
+        final int vertexShader = MyGLRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+        final int fragmentShader = MyGLRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
         // create empty OpenGL ES Program
         mProgram = GLES20.glCreateProgram();
@@ -91,7 +89,7 @@ public class Protrusion {
         GLES20.glLinkProgram(mProgram);
     }
 
-    public void draw(float[] mvpMatrix) { // pass in the calculated transformation matrix
+    public void draw(final float[] mvpMatrix) { // pass in the calculated transformation matrix
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram);
 

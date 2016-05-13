@@ -28,18 +28,18 @@ public class MyGLSurfaceView extends GLSurfaceView {
 
     @Override
     public boolean onTouchEvent(final MotionEvent event) {
-        if ((event.getEventTime() - event.getDownTime()) < 1) {
+        if (event.getEventTime() - event.getDownTime() < 1) {
             displayMetrics = context.getResources().getDisplayMetrics();
             width = displayMetrics.widthPixels;
 
             x = event.getX();
 
             if (!mRenderer.falling) {
-                if (x <= (width / 3)) {
+                if (x <= width / 3) {
                     mRenderer.nextCol = 0;
-                } else if (x > width / 3 && x < (width * 2 / 3)) {
+                } else if (x > width / 3 && x < (width << 1) / 3) {
                     mRenderer.nextCol = 1;
-                } else if (x > (width * 2 / 3)) {
+                } else if (x > (width << 1) / 3) {
                     mRenderer.nextCol = 2;
                 }
             }
