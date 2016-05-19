@@ -171,82 +171,85 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
                     }
                 }
             }
-        }
 
-        if (jump && !inAir && !falling) {
-            if (protQueue.size > 1) {
-                protQueue.removeLast()
-                inAir = true
-                jumpCol = nextCol
-            }
+            if (!falling) {
+                if (jump && !inAir) {
+                    if (protQueue.size > 1) {
+                        protQueue.removeLast()
+                        inAir = true
+                        jumpCol = nextCol
+                    }
 
-            jump = false
-        }
-
-        if (inAir && !falling) {
-            if (mPlayer.transMatrix[13] >= mProtrusions[protQueue.last]!!.transMatrix[13] + PLAYER_HEIGHT && !endOfJump) {
-                mPlayer.transMatrix[13] = mProtrusions[protQueue.last]!!.transMatrix[13] + PLAYER_HEIGHT - 0.001f
-                jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (mProtrusions[protQueue.last]!!.transMatrix[13] + PLAYER_HEIGHT
-                        - mPlayer.transMatrix[13]))
-                endOfJump = true
-            } else if (endOfJump && mPlayer.transMatrix[13] > mProtrusions[protQueue.last]!!.transMatrix[13]) {
-                jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (mProtrusions[protQueue.last]!!.transMatrix[13] + PLAYER_HEIGHT
-                        - mPlayer.transMatrix[13]))
-            } else if (endOfJump && mPlayer.transMatrix[13] <= mProtrusions[protQueue.last]!!.transMatrix[13]) {
-                mPlayer.transMatrix[13] = mProtrusions[protQueue.last]!!.transMatrix[13]
-
-                if (jumpCol != protQueue.last % 3) {
-                    falling = true
-                } else {
-                    jumpYAccel = 0.0f
+                    jump = false
                 }
 
-                endOfJump = false
-            } else if (mPlayer.transMatrix[13] < mProtrusions[protQueue.last]!!.transMatrix[13]) {
-                jumpYAccel = baseSpeed * (JUMP_SPEED * 22.0f * (mProtrusions[protQueue.last]!!.transMatrix[13] + PLAYER_HEIGHT
-                        - mPlayer.transMatrix[13]))
-            }
+                if (inAir) {
+                    val playerYPos = mPlayer.transMatrix[13]
+                    val lastProtrutionYPos = mProtrusions[protQueue.last]!!.transMatrix[13]
 
-            if (mPlayer.transMatrix[12] <= (jumpCol - 1) * YGAP && goingRight || mPlayer.transMatrix[12] >= (jumpCol - 1) * YGAP && goingLeft) {
-                if (jumpCol != protQueue.last % 3) {
-                    falling = true
-                } else {
-                    jumpXAccel = 0.0f
+                    if (playerYPos >= lastProtrutionYPos + PLAYER_HEIGHT && !endOfJump) {
+                        mPlayer.transMatrix[13] = lastProtrutionYPos + PLAYER_HEIGHT - 0.001f
+                        jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - mPlayer.transMatrix[13]))
+                        endOfJump = true
+                    } else if (endOfJump) {
+                        if (playerYPos > lastProtrutionYPos) {
+                            jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - playerYPos))
+                        } else if (playerYPos <= lastProtrutionYPos) {
+                            mPlayer.transMatrix[13] = lastProtrutionYPos
+
+                            if (jumpCol != protQueue.last % 3) {
+                                falling = true
+                            } else {
+                                jumpYAccel = 0.0f
+                            }
+
+                            endOfJump = false
+                        }
+                    } else if (playerYPos < lastProtrutionYPos) {
+                        jumpYAccel = baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - playerYPos))
+                    }
+
+                    val playerXPos = mPlayer.transMatrix[12]
+
+                    if (playerXPos <= (jumpCol - 1) * YGAP && goingRight || playerXPos >= (jumpCol - 1) * YGAP && goingLeft) {
+                        if (jumpCol != protQueue.last % 3) {
+                            falling = true
+                        } else {
+                            jumpXAccel = 0.0f
+                        }
+
+                        mPlayer.transMatrix[12] = (jumpCol - 1) * YGAP
+                        goingLeft = false
+                        goingRight = false
+                    } else if (!goingRight && !goingLeft) {
+                        if (playerXPos < (jumpCol - 1) * YGAP) {
+                            jumpXAccel = baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 - playerXPos / YGAP))
+                            goingLeft = true
+                        } else if (playerXPos > (jumpCol - 1) * YGAP) {
+                            jumpXAccel = -baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 + playerXPos / YGAP))
+                            goingRight = true
+                        }
+                    }
+
+                    if (jumpYAccel == 0.0f && jumpXAccel == 0.0f) {
+                        score++
+                        inAir = false
+                    }
                 }
-
-                mPlayer.transMatrix[12] = (jumpCol - 1) * YGAP
-                goingLeft = false
-                goingRight = false
-            } else if (mPlayer.transMatrix[12] < (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
-                // Needs to be -2 * baseSpeed for 1 distance hops and -4 * baseSpeed for 2 distance hops
-                jumpXAccel = baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 - mPlayer.transMatrix[12] / YGAP))
-                goingLeft = true
-            } else if (mPlayer.transMatrix[12] > (jumpCol - 1) * YGAP && !goingRight && !goingLeft) {
-                // Needs to be 2 * baseSpeed for 1 distance hops and 4 * baseSpeed for 2 distance hops
-                jumpXAccel = -baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 + mPlayer.transMatrix[12] / YGAP))
-                goingRight = true
+            } else {
+                baseSpeed = 0.0f
             }
 
-            if (jumpYAccel == 0.0f && jumpXAccel == 0.0f) {
-                score++
-                inAir = false
+            if (mPlayer.transMatrix[13] < BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT - PLAYER_HEIGHT) {
+                started = false
+                baseSpeed = 0.0f
+                jumpYAccel = 0.0f
+                jumpXAccel = 0.0f
+                this.onSurfaceCreated(unused, config)
             }
         }
 
-        if (falling || mPlayer.transMatrix[13] < BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT - PLAYER_HEIGHT) {
-            baseSpeed = 0f
-            started = false
-        }
-
-        if (mPlayer.transMatrix[13] >= BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT - PLAYER_HEIGHT) {
-            mPlayer.draw(mPlayer.playerMatrix)
-        } else {
-            baseSpeed = 0.0f
-            jumpYAccel = 0.0f
-            jumpXAccel = 0.0f
-            this.onSurfaceCreated(unused, config)
-        }
-
+        mPlayer.draw(mPlayer.playerMatrix)
         mProtrusions.filter { it!!.transMatrix[13] >= BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT }.forEach { it?.draw(it.protMatrix) }
     }
 
