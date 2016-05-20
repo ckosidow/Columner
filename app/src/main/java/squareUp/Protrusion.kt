@@ -1,4 +1,4 @@
-package columner
+package squareUp
 
 import android.opengl.GLES20
 import java.nio.ByteBuffer
@@ -9,34 +9,33 @@ import java.nio.ShortBuffer
 class Protrusion(col: Double) {
     companion object {
         val WIDTH = 0.15f
-        private val LEFT = 0.54f
-        internal val COORDS_PER_VERTEX = 3
+        val LEFT = 0.54f
+        val COORDS_PER_VERTEX = 3
+        val HEIGHT = 0.025f
     }
 
-    private val vertexBuffer: FloatBuffer
-    private val drawListBuffer: ShortBuffer
-    private var mProgram: Int = 0
-    private var mPositionHandle: Int = 0
-    private var mColorHandle: Int = 0
-    private var mMVPMatrixHandle: Int = 0
+    val vertexBuffer: FloatBuffer
+    val drawListBuffer: ShortBuffer
+    var mProgram: Int = 0
+    var mPositionHandle: Int = 0
     var protMatrix = FloatArray(16)
     val transMatrix = floatArrayOf(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f)
-    private val color = floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f)
-    private val protCoords = floatArrayOf(LEFT, PROTRUSION_HEIGHT, 0.0f,
+    val color = floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f)
+    val protCoords = floatArrayOf(LEFT, HEIGHT, 0.0f,
             LEFT, 0.0f, 0.0f,
             (LEFT - WIDTH), 0.0f, 0.0f,
-            (LEFT - WIDTH), PROTRUSION_HEIGHT, 0.0f)
-    private val DRAW_ORDER = shortArrayOf(0, 1, 2, 0, 2, 3)
-    private val vertexStride = COORDS_PER_VERTEX shl 2
-    private val vertexCount = protCoords.size / COORDS_PER_VERTEX
-    private val vertexShaderCode =
+            (LEFT - WIDTH), HEIGHT, 0.0f)
+    val DRAW_ORDER = shortArrayOf(0, 1, 2, 0, 2, 3)
+    val vertexStride = COORDS_PER_VERTEX shl 2
+    val vertexCount = protCoords.size / COORDS_PER_VERTEX
+    val vertexShaderCode =
             "uniform mat4 uMVPMatrix;" +
                     "attribute vec4 vPosition;" +
                     "void main() {" +
                     " gl_Position = uMVPMatrix * vPosition;" +
                     "}"
 
-    private val fragmentShaderCode =
+    val fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
                     "void main() {" +
@@ -49,15 +48,11 @@ class Protrusion(col: Double) {
         protCoords[6] -= (.465 * col).toFloat()
         protCoords[9] -= (.465 * col).toFloat()
 
-        val byteBuffer = ByteBuffer.allocateDirect(protCoords.size shl 2)
-        byteBuffer.order(ByteOrder.nativeOrder())
-        vertexBuffer = byteBuffer.asFloatBuffer()
+        vertexBuffer = ByteBuffer.allocateDirect(protCoords.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
         vertexBuffer.put(protCoords)
         vertexBuffer.position(0)
 
-        val dlb = ByteBuffer.allocateDirect(DRAW_ORDER.size shl 1)
-        dlb.order(ByteOrder.nativeOrder())
-        drawListBuffer = dlb.asShortBuffer()
+        drawListBuffer = ByteBuffer.allocateDirect(DRAW_ORDER.size shl 1).order(ByteOrder.nativeOrder()).asShortBuffer()
         drawListBuffer.put(DRAW_ORDER)
         drawListBuffer.position(0)
 
@@ -71,13 +66,14 @@ class Protrusion(col: Double) {
 
     fun draw(mvpMatrix: FloatArray) {
         GLES20.glUseProgram(mProgram)
+
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition")
         GLES20.glEnableVertexAttribArray(mPositionHandle)
         GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, vertexBuffer)
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor")
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0)
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix")
-        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0)
+
+        GLES20.glUniform4fv(GLES20.glGetUniformLocation(mProgram, "vColor"), 1, color, 0)
+        GLES20.glUniformMatrix4fv(GLES20.glGetUniformLocation(mProgram, "uMVPMatrix"), 1, false, mvpMatrix, 0)
+
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount)
         GLES20.glDisableVertexAttribArray(mPositionHandle)
     }

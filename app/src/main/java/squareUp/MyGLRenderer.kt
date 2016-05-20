@@ -1,4 +1,4 @@
-package columner
+package squareUp
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -16,16 +16,14 @@ import javax.microedition.khronos.opengles.GL10
 
 class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
     companion object {
-        private val COLUMNS = 3
-        private val BOTTOM_OF_SCREEN = -1.0f
-        private val TOP_OF_SCREEN = 1.0f
-        private val XGAP = 0.5f
-        private val YGAP = -0.465f
-        private val STARTPOS = BOTTOM_OF_SCREEN + XGAP
-        private val JUMP_SPEED = -1.0f
-        private val START_SPEED = -0.01f
-        private val MAX_SPEED = -0.03f
-        private val ACCEL = -0.000005f
+        val COLUMNS = 3
+        val BOTTOM_OF_SCREEN = -1.0f
+        val TOP_OF_SCREEN = 1.0f
+        val XGAP = 0.5f
+        val YGAP = -0.465f
+        val START_SPEED = -0.01f
+        val MAX_SPEED = -0.03f
+        val ACCEL = -0.000005f
         lateinit var indices: ShortArray
 
         fun loadShader(
@@ -41,40 +39,31 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
     }
 
     var baseSpeed: Float = 0.toFloat()
-    var jumpYAccel: Float = 0.toFloat()
-    var jumpXAccel: Float = 0.toFloat()
     var started: Boolean = false
-    var jump: Boolean = false
-    var inAir: Boolean = false
-    var endOfJump: Boolean = false
-    var goingLeft: Boolean = false
-    var goingRight: Boolean = false
-    var falling: Boolean = false
-    private var jumpCol = 1
+    var jumpCol = 1
     var nextCol: Int = 0
-    private val mProtrusions = arrayOfNulls<Protrusion>(6)
-    private lateinit var mPlayer: Player
-    private val protQueue = LinkedList<Int>()
-    private var needNext: Boolean = false
-    private val context: Context
-    private var score: Int = 0
-    private lateinit var config: EGLConfig
+    val mProtrusions = arrayOfNulls<Protrusion>(6)
+    lateinit var mPlayer: Player
+    val protQueue = LinkedList<Int>()
+    val context: Context
+    var score: Int = 0
+    lateinit var config: EGLConfig
     lateinit var vertexBuffer: FloatBuffer
     lateinit var uvBuffer: FloatBuffer
     lateinit var drawListBuffer: ShortBuffer
-    private val mtrxProjection = FloatArray(16)
-    private val mtrxView = FloatArray(16)
-    private val mtrxProjectionAndView = FloatArray(16)
-    private lateinit var tm: TextManager
-    lateinit private var scoreTxt: TextObject
-    private var ssu = 1.0f
-    private var ssx = 1.0f
-    private var ssy = 1.0f
-    private var swp = 320.0f
-    private var shp = 480.0f
-    private val mMVPMatrix = FloatArray(16)
-    private val mProjectionMatrix = FloatArray(16)
-    private val mViewMatrix = FloatArray(16)
+    val mtrxProjection = FloatArray(16)
+    val mtrxView = FloatArray(16)
+    val mtrxProjectionAndView = FloatArray(16)
+    lateinit var tm: TextManager
+    lateinit var scoreTxt: TextObject
+    var ssu = 1.0f
+    var ssx = 1.0f
+    var ssy = 1.0f
+    var swp = 320.0f
+    var shp = 480.0f
+    val mMVPMatrix = FloatArray(16)
+    val mProjectionMatrix = FloatArray(16)
+    val mViewMatrix = FloatArray(16)
 
     init {
         this.context = context
@@ -85,12 +74,13 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
             c: EGLConfig) {
         config = c
         protQueue.clear()
-        falling = false
-        inAir = false
-        jump = false
-        endOfJump = false
-        goingLeft = false
-        goingRight = false
+        mPlayer = Player()
+        mPlayer.falling = false
+        mPlayer.inAir = false
+        mPlayer.jump = false
+        mPlayer.goingLeft = false
+        mPlayer.goingRight = false
+        mPlayer.endOfJump = false
         jumpCol = 1
         this.setupScaling()
         this.setupTriangle()
@@ -112,17 +102,16 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
         GLES20.glLinkProgram(sp_Text)
 
         GLES20.glUseProgram(sp_Image)
-        mPlayer = Player()
-        mPlayer.transMatrix[13] = STARTPOS
+        mPlayer.transMatrix[13] = mPlayer.STARTPOS
 
         for (i in mProtrusions.indices) {
             mProtrusions[i] = Protrusion((i % COLUMNS).toDouble())
 
             if (i == 1) {
-                mProtrusions[i]!!.transMatrix[13] = STARTPOS
+                mProtrusions[i]!!.transMatrix[13] = mPlayer.STARTPOS
                 protQueue.push(i)
             } else if (i > 1 && i <= 3) {
-                mProtrusions[i]!!.transMatrix[13] = STARTPOS + (i - 1) * XGAP
+                mProtrusions[i]!!.transMatrix[13] = mPlayer.STARTPOS + (i - 1) * XGAP
                 protQueue.push(i)
             } else {
                 mProtrusions[i]!!.transMatrix[13] = -2.0f
@@ -134,7 +123,7 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         Matrix.setLookAtM(mViewMatrix, 0, 0.0f, 0.0f, -3.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f)
         Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0)
-        Matrix.translateM(mPlayer.transMatrix, 0, jumpXAccel, baseSpeed + jumpYAccel, 0.0f)
+        Matrix.translateM(mPlayer.transMatrix, 0, mPlayer.jumpXAccel, baseSpeed + mPlayer.jumpYAccel, 0.0f)
         Matrix.multiplyMM(mPlayer.playerMatrix, 0, mMVPMatrix, 0, mPlayer.transMatrix, 0)
 
         this.Render(mtrxProjectionAndView)
@@ -172,85 +161,88 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
                 }
             }
 
-            if (!falling) {
-                if (jump && !inAir) {
+            if (!mPlayer.falling) {
+                if (mPlayer.jump && !mPlayer.inAir) {
                     if (protQueue.size > 1) {
                         protQueue.removeLast()
-                        inAir = true
+                        mPlayer.inAir = true
                         jumpCol = nextCol
                     }
 
-                    jump = false
+                    mPlayer.jump = false
                 }
 
-                if (inAir) {
+                if (mPlayer.inAir) {
                     val playerYPos = mPlayer.transMatrix[13]
                     val lastProtrutionYPos = mProtrusions[protQueue.last]!!.transMatrix[13]
 
-                    if (playerYPos >= lastProtrutionYPos + PLAYER_HEIGHT && !endOfJump) {
-                        mPlayer.transMatrix[13] = lastProtrutionYPos + PLAYER_HEIGHT - 0.001f
-                        jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - mPlayer.transMatrix[13]))
-                        endOfJump = true
-                    } else if (endOfJump) {
+                    if (playerYPos >= lastProtrutionYPos + mPlayer.HEIGHT && !mPlayer.endOfJump) {
+                        mPlayer.transMatrix[13] = lastProtrutionYPos + mPlayer.HEIGHT - 0.001f
+                        mPlayer.jumpYAccel = -baseSpeed * (mPlayer.JUMP_SPEED * 22.0f * (lastProtrutionYPos + mPlayer.HEIGHT
+                                - mPlayer.transMatrix[13]))
+                        mPlayer.endOfJump = true
+                    } else if (mPlayer.endOfJump) {
                         if (playerYPos > lastProtrutionYPos) {
-                            jumpYAccel = -baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - playerYPos))
-                        } else if (playerYPos <= lastProtrutionYPos) {
+                            mPlayer.jumpYAccel = -baseSpeed * (mPlayer.JUMP_SPEED * 22.0f * (lastProtrutionYPos + mPlayer.HEIGHT - playerYPos))
+                        } else {
                             mPlayer.transMatrix[13] = lastProtrutionYPos
 
                             if (jumpCol != protQueue.last % 3) {
-                                falling = true
+                                mPlayer.falling = true
                             } else {
-                                jumpYAccel = 0.0f
+                                mPlayer.jumpYAccel = 0.0f
                             }
 
-                            endOfJump = false
+                            mPlayer.endOfJump = false
                         }
                     } else if (playerYPos < lastProtrutionYPos) {
-                        jumpYAccel = baseSpeed * (JUMP_SPEED * 22.0f * (lastProtrutionYPos + PLAYER_HEIGHT - playerYPos))
+                        mPlayer.jumpYAccel = baseSpeed * (mPlayer.JUMP_SPEED * 22.0f * (lastProtrutionYPos + mPlayer.HEIGHT - playerYPos))
                     }
 
                     val playerXPos = mPlayer.transMatrix[12]
 
-                    if (playerXPos <= (jumpCol - 1) * YGAP && goingRight || playerXPos >= (jumpCol - 1) * YGAP && goingLeft) {
+                    if (playerXPos <= (jumpCol - 1) * YGAP && mPlayer.goingRight || playerXPos >= (jumpCol - 1) * YGAP && mPlayer.goingLeft) {
                         if (jumpCol != protQueue.last % 3) {
-                            falling = true
+                            mPlayer.falling = true
                         } else {
-                            jumpXAccel = 0.0f
+                            mPlayer.jumpXAccel = 0.0f
                         }
 
                         mPlayer.transMatrix[12] = (jumpCol - 1) * YGAP
-                        goingLeft = false
-                        goingRight = false
-                    } else if (!goingRight && !goingLeft) {
+                        mPlayer.goingLeft = false
+                        mPlayer.goingRight = false
+                    } else if (!mPlayer.goingRight && !mPlayer.goingLeft) {
                         if (playerXPos < (jumpCol - 1) * YGAP) {
-                            jumpXAccel = baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 - playerXPos / YGAP))
-                            goingLeft = true
+                            mPlayer.jumpXAccel = baseSpeed * 1.3f * (mPlayer.JUMP_SPEED + mPlayer.JUMP_SPEED * Math.abs(jumpCol % 2
+                                    - playerXPos / YGAP))
+                            mPlayer.goingLeft = true
                         } else if (playerXPos > (jumpCol - 1) * YGAP) {
-                            jumpXAccel = -baseSpeed * 1.3f * (JUMP_SPEED + JUMP_SPEED * Math.abs(jumpCol % 2 + playerXPos / YGAP))
-                            goingRight = true
+                            mPlayer.jumpXAccel = -baseSpeed * 1.3f * (mPlayer.JUMP_SPEED + mPlayer.JUMP_SPEED * Math.abs(jumpCol % 2
+                                    + playerXPos / YGAP))
+                            mPlayer.goingRight = true
                         }
                     }
 
-                    if (jumpYAccel == 0.0f && jumpXAccel == 0.0f) {
+                    if (mPlayer.jumpYAccel == 0.0f && mPlayer.jumpXAccel == 0.0f) {
                         score++
-                        inAir = false
+                        mPlayer.inAir = false
                     }
                 }
             } else {
                 baseSpeed = 0.0f
             }
 
-            if (mPlayer.transMatrix[13] < BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT - PLAYER_HEIGHT) {
+            if (mPlayer.transMatrix[13] < BOTTOM_OF_SCREEN - Protrusion.HEIGHT - mPlayer.HEIGHT) {
                 started = false
                 baseSpeed = 0.0f
-                jumpYAccel = 0.0f
-                jumpXAccel = 0.0f
+                mPlayer.jumpYAccel = 0.0f
+                mPlayer.jumpXAccel = 0.0f
                 this.onSurfaceCreated(unused, config)
             }
         }
 
         mPlayer.draw(mPlayer.playerMatrix)
-        mProtrusions.filter { it!!.transMatrix[13] >= BOTTOM_OF_SCREEN - PROTRUSION_HEIGHT }.forEach { it?.draw(it.protMatrix) }
+        mProtrusions.filter { it!!.transMatrix[13] >= BOTTOM_OF_SCREEN - Protrusion.HEIGHT }.forEach { it?.draw(it.protMatrix) }
     }
 
     override fun onSurfaceChanged(
@@ -412,12 +404,12 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
         //        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
         //        bmp.recycle();
 
-        val id = context.resources.getIdentifier("drawable/font", null, context.packageName)
-        val bmp = BitmapFactory.decodeResource(context.resources, id)
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0 + 1)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texturenames[1])
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR)
         GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR)
+
+        val bmp = BitmapFactory.decodeResource(context.resources, context.resources.getIdentifier("drawable/font", null, context.packageName))
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0)
         bmp.recycle()
     }

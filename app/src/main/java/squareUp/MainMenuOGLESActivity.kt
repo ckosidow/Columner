@@ -1,4 +1,4 @@
-package columner
+package squareUp
 
 import android.app.Activity
 import android.os.Bundle

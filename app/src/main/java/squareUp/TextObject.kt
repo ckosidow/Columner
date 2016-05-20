@@ -1,4 +1,4 @@
-package columner
+package squareUp
 
 class TextObject {
     var text: String

@@ -1,4 +1,4 @@
-package columner
+package squareUp
 
 import android.opengl.GLES20
 import java.nio.ByteBuffer
@@ -6,22 +6,22 @@ import java.nio.ByteOrder
 import java.util.*
 
 class TextManager {
-    private var vecs: FloatArray
-    private var uvs: FloatArray
-    private var indices: ShortArray
-    private var colors: FloatArray
-    private var index_vecs: Int = 0
-    private var index_indices: Int = 0
-    private var index_uvs: Int = 0
-    private var index_colors: Int = 0
-    private var texturenr: Int = 0
+    var vecs: FloatArray
+    var uvs: FloatArray
+    var indices: ShortArray
+    var colors: FloatArray
+    var index_vecs: Int = 0
+    var index_indices: Int = 0
+    var index_uvs: Int = 0
+    var index_colors: Int = 0
+    var texturenr: Int = 0
     var uniformscale: Float = 0.toFloat()
     var txtcollection: Vector<TextObject>
 
     companion object {
-        private val RI_TEXT_UV_BOX_WIDTH = 0.125f
-        private val RI_TEXT_WIDTH = 32.0f
-        private val RI_TEXT_SPACESIZE = 20.0f
+        val RI_TEXT_UV_BOX_WIDTH = 0.125f
+        val RI_TEXT_WIDTH = 32.0f
+        val RI_TEXT_SPACESIZE = 20.0f
         var lSize = intArrayOf(36, 29, 30, 34, 25, 25, 34, 33, 11, 20, 31, 24, 48, 35, 39, 29, 42, 31, 27, 31, 34, 35, 46, 35, 31, 27, 30, 26, 28,
                 26, 31, 28, 28, 28, 29, 29, 14, 24, 30, 18, 26, 14, 14, 14, 25, 28, 31, 0, 0, 38, 39, 12, 36, 34, 0, 0, 0, 38, 0, 0, 0, 0, 0, 0)
 
@@ -29,44 +29,31 @@ class TextManager {
             var indx = -1
 
             if (cVal > 64 && cVal < 91) {
-                // A-Z
-                indx = cVal - 65
+                indx = cVal - 65 // A-Z
             } else if (cVal > 96 && cVal < 123) {
-                // a-z
-                indx = cVal - 97
+                indx = cVal - 97 // a-z
             } else if (cVal > 47 && cVal < 58) {
-                // 0-9
-                indx = cVal - 48 + 26
+                indx = cVal - 48 + 26 // 0-9
             } else if (cVal == 43) {
-                // +
-                indx = 38
+                indx = 38 // +
             } else if (cVal == 45) {
-                // -
-                indx = 39
+                indx = 39 // -
             } else if (cVal == 33) {
-                // !
-                indx = 36
+                indx = 36 // !
             } else if (cVal == 63) {
-                // ?
-                indx = 37
+                indx = 37 // ?
             } else if (cVal == 61) {
-                // =
-                indx = 40
+                indx = 40 // =
             } else if (cVal == 58) {
-                // :
-                indx = 41
+                indx = 41 // :
             } else if (cVal == 46) {
-                // .
-                indx = 42
+                indx = 42 // .
             } else if (cVal == 44) {
-                // ,
-                indx = 43
+                indx = 43 // ,
             } else if (cVal == 42) {
-                // *
-                indx = 44
+                indx = 44 // *
             } else if (cVal == 36) {
-                // $
-                indx = 45
+                indx = 45  // $
             }
 
             return indx
@@ -102,23 +89,23 @@ class TextManager {
             indi: ShortArray) {
         val base = (index_vecs / 3).toShort()
 
-        for (vector in vec) {
-            vecs[index_vecs] = vector
+        vec.forEach {
+            vecs[index_vecs] = it
             index_vecs++
         }
 
-        for (color in cs) {
-            colors[index_colors] = color
+        cs.forEach {
+            colors[index_colors] = it
             index_colors++
         }
 
-        for (unit in uv) {
-            uvs[index_uvs] = unit
+        uv.forEach {
+            uvs[index_uvs] = it
             index_uvs++
         }
 
-        for (index in indi) {
-            indices[index_indices] = (base + index).toShort()
+        indi.forEach {
+            indices[index_indices] = (base + it).toShort()
             index_indices++
         }
     }
@@ -140,13 +127,10 @@ class TextManager {
 
     fun prepareDraw() {
         this.prepareDrawInfo()
-        val it = txtcollection.iterator()
 
-        while (it.hasNext()) {
-            val txt = it.next()
-
-            if (txt != null) {
-                this.convertTextToTriangleInfo(txt)
+        txtcollection.forEach {
+            if (it != null) {
+                this.convertTextToTriangleInfo(it)
             }
         }
     }
@@ -154,19 +138,19 @@ class TextManager {
     fun Draw(matrix: FloatArray) {
         GLES20.glUseProgram(sp_Text)
 
-        var vertexBuffer = ByteBuffer.allocateDirect(vecs.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        val vertexBuffer = ByteBuffer.allocateDirect(vecs.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
         vertexBuffer.put(vecs)
         vertexBuffer.position(0)
 
-        var colorBuffer = ByteBuffer.allocateDirect(colors.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        val colorBuffer = ByteBuffer.allocateDirect(colors.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
         colorBuffer.put(colors)
         colorBuffer.position(0)
 
-        var textureBuffer = ByteBuffer.allocateDirect(uvs.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
+        val textureBuffer = ByteBuffer.allocateDirect(uvs.size shl 2).order(ByteOrder.nativeOrder()).asFloatBuffer()
         textureBuffer.put(uvs)
         textureBuffer.position(0)
 
-        var drawListBuffer = ByteBuffer.allocateDirect(indices.size shl 2).order(ByteOrder.nativeOrder()).asShortBuffer()
+        val drawListBuffer = ByteBuffer.allocateDirect(indices.size shl 2).order(ByteOrder.nativeOrder()).asShortBuffer()
         drawListBuffer.put(indices)
         drawListBuffer.position(0)
 
@@ -205,32 +189,20 @@ class TextManager {
                 continue
             }
 
-            val row = indx / 8
-            val col = indx % 8
-            val v = row * RI_TEXT_UV_BOX_WIDTH
-            val v2 = v + RI_TEXT_UV_BOX_WIDTH
-            val u = col * RI_TEXT_UV_BOX_WIDTH
-            val u2 = u + RI_TEXT_UV_BOX_WIDTH
-            val vec = FloatArray(12)
-            val uv = FloatArray(8)
-            val colors: FloatArray
+            val vec = floatArrayOf(
+                    x, y + RI_TEXT_WIDTH * uniformscale, 0.99f, x, y, 0.99f,
+                    x + RI_TEXT_WIDTH * uniformscale, y, 0.99f,
+                    x + RI_TEXT_WIDTH * uniformscale,
+                    y + RI_TEXT_WIDTH * uniformscale, 0.99f)
 
-            vec[0] = x
-            vec[1] = y + RI_TEXT_WIDTH * uniformscale
-            vec[2] = 0.99f
-            vec[3] = x
-            vec[4] = y
-            vec[5] = 0.99f
-            vec[6] = x + RI_TEXT_WIDTH * uniformscale
-            vec[7] = y
-            vec[8] = 0.99f
-            vec[9] = x + RI_TEXT_WIDTH * uniformscale
-            vec[10] = y + RI_TEXT_WIDTH * uniformscale
-            vec[11] = 0.99f
-
-            colors = floatArrayOf(textObj.color[0], textObj.color[1], textObj.color[2], textObj.color[3], textObj.color[0],
+            val colors = floatArrayOf(textObj.color[0], textObj.color[1], textObj.color[2], textObj.color[3], textObj.color[0],
                     textObj.color[1], textObj.color[2], textObj.color[3], textObj.color[0], textObj.color[1], textObj.color[2],
                     textObj.color[3], textObj.color[0], textObj.color[1], textObj.color[2], textObj.color[3])
+            val uv = FloatArray(8)
+            val u = indx % 8 * RI_TEXT_UV_BOX_WIDTH
+            val u2 = u + RI_TEXT_UV_BOX_WIDTH
+            val v = indx / 8 * RI_TEXT_UV_BOX_WIDTH
+            val v2 = v + RI_TEXT_UV_BOX_WIDTH
 
             uv[0] = u + 0.001f
             uv[1] = v + 0.001f
