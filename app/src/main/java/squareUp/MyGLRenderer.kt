@@ -139,7 +139,7 @@ class MyGLRenderer(context: Context) : GLSurfaceView.Renderer {
         }
 
         if (started) {
-            if (baseSpeed == 0.0f) {
+            if (baseSpeed == 0.0f && !mPlayer.inAir) {
                 baseSpeed = START_SPEED
                 score = 0
             } else if (baseSpeed >= MAX_SPEED) {

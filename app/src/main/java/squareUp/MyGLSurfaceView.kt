@@ -29,10 +29,9 @@ class MyGLSurfaceView(context: Context) : GLSurfaceView(context) {
                 }
             }
 
-            mRenderer.started = true
-            mRenderer.mPlayer.jump = !mRenderer.mPlayer.jump && !mRenderer.mPlayer.falling;
+            mRenderer.started = true;
 
-            this.requestRender()
+            mRenderer.mPlayer.jump = !mRenderer.mPlayer.jump && !mRenderer.mPlayer.falling;
         }
 
         return true
